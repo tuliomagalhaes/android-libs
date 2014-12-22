@@ -1,0 +1,51 @@
+cmake_minimum_required(VERSION 2.8)
+
+set( PROJECT_NAME vorbis )
+
+project( ${PROJECT_NAME} )
+
+set ( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -fsigned-char")
+
+set( OGG_PATH ../libogg )
+
+if(${ANDROID_ABI} STREQUAL "armeabi")
+    set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv6 -marm -mfloat-abi=softfp -mfpu=vfp")
+    set( OGG_LIB ${OGG_PATH}/libs/armeabi/ )
+elseif( ${ANDROID_ABI} STREQUAL "armeabi-v7a" )
+    set( OGG_LIB ${OGG_PATH}/libs/armeabi-v7a/ )
+elseif( ${ANDROID_ABI} STREQUAL "x86" )
+    set( OGG_LIB ${OGG_PATH}/libs/x86/ )
+endif()
+
+include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include"
+		     "${CMAKE_CURRENT_SOURCE_DIR}/src" )
+
+include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/${OGG_PATH}/include" )
+
+file( GLOB LIB_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/mdct.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/smallft.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/block.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/envelope.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/window.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/lsp.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/lpc.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/analysis.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/synthesis.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/psy.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/info.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/floor1.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/floor0.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/res0.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/mapping0.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/registry.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/codebook.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/sharedbook.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/lookup.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/bitrate.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/vorbisenc.c" )
+
+add_library( ${PROJECT_NAME} STATIC ${LIB_SOURCES} )
+add_library( "${PROJECT_NAME}file" STATIC ${CMAKE_CURRENT_SOURCE_DIR}/src/vorbisfile.c )
+target_link_libraries( ${PROJECT_NAME} ${OGG_LIB}/libogg.a )
+target_link_libraries( "${PROJECT_NAME}file" ${OGG_LIB}/libogg.a )

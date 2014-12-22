@@ -1,0 +1,11 @@
+boost_*
+build
+/boost-*
+build-arm*
+build-x86
+*~
+logs
+build.log
+/libs
+*.swp
+*.vim
