@@ -28,7 +28,7 @@
 # -----------------------
 
 BOOST_VER1=1
-BOOST_VER2=48
+BOOST_VER2=55
 BOOST_VER3=0
 ABI=armeabi
 ANDROID_NDK_ROOT=/opt/android-ndk
