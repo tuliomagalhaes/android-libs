@@ -1,23 +1,29 @@
+# Created to run on Linux and using NDK R25B
+
+NDK_DIR=$ANDROID_NDK_ROOT
+
 function execute_cmake_for_android() {
     ABI=$1
-    COMPILER=$2
         
-    mkdir build && cd build
+    mkdir -p build && cd build
     
-    cmake -DCMAKE_TOOLCHAIN_FILE=../android.toolchain.cmake -DANDROID_ABI=$ABI -DANDROID_TOOLCHAIN_NAME=$COMPILER ..
+    cmake $NDK/build/cmake/android.toolchain.cmake \
+        -DANDROID_ABI=$ABI \
+        -DANDROID_PLATFORM=android-21 \
+        ..
     make
     
-    cd ../ && rm -r build
+    cd ../
 }
 
-function compile_for_x86_armeabi_and_armeabiv7a() {
-    execute_cmake_for_android armeabi-v7a arm-linux-androideabi-4.6
-    execute_cmake_for_android armeabi arm-linux-androideabi-4.6
-    execute_cmake_for_android x86 x86-4.6
+function compile_for_all_abis() {
+    execute_cmake_for_android armeabi-v7a
+    execute_cmake_for_android arm64-v8a
+    execute_cmake_for_android x86
+    execute_cmake_for_android x86_64
 }
 
 for DIR in *
 do
-    cd ${DIR} && compile_for_x86_armeabi_and_armeabiv7a && cd ..
+    cd ${DIR} && compile_for_all_abis && cd ..
 done
-
