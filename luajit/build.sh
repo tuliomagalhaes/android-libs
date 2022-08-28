@@ -1,62 +1,44 @@
-#!/bin/bash
+# Created to run on Linux and using NDK 
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-host_os=`uname -s | tr "[:upper:]" "[:lower:]"`
+NDKDIR=$ANDROID_NDK_ROOT
+NDKBIN=$NDKDIR/toolchains/llvm/prebuilt/linux-x86_64/bin
+LIBDIR=libs
 
-SRCDIR=$DIR
-LIBDIR=$DIR/libs/
-NDKFLAGS="-fexceptions -ffunction-sections -funwind-tables -no-canonical-prefixes -fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 -Wa,--noexecstack -DNDEBUG -DANDROID"
-#NDKFLAGS="$NDKFLAGS -O3 -funroll-loops -fomit-frame-pointer -fno-stack-protector"
+function build() {     
+     TOOLCHAIN=$1
+     IFS='-'
+     read -ra TOOLCHAIN_PARTS <<< "$TOOLCHAIN"
+     ARCH=${TOOLCHAIN_PARTS[0]}
+     IFS=$OIFS
 
-cd "$SRCDIR"
+     echo "Building libluajit for arch $ARCH"
+     
+     NDKCC=$NDKBIN/$TOOLCHAIN
+     DESTDIR=$LIBDIR/$ARCH
 
-NDK=$ANDROID_NDK
-NDKABI=9
-NDKVER=$NDK/toolchains/arm-linux-androideabi-4.6
-NDKP=$NDKVER/prebuilt/${host_os}-x86_64/bin/arm-linux-androideabi-
-NDKF="--sysroot $NDK/platforms/android-$NDKABI/arch-arm"
-NDKARCH="$NDKFLAGS -march=armv5te -mtune=xscale -msoft-float"
+     mkdir -p $DESTDIR
 
-# Android/ARM, armeabi (ARMv5TE soft-float), Android 2.2+ (Froyo)
-DESTDIR=$LIBDIR/armeabi
-mkdir -p $DESTDIR
-rm "$DESTDIR"/luajit.so
-make clean
-make amalg HOST_CC="gcc -m32" CROSS=$NDKP TARGET_SYS=Linux TARGET_FLAGS="$NDKF $NDKARCH"
+     make clean
 
-if [ -f $SRCDIR/src/libluajit.so ]; then
-    mv $SRCDIR/src/libluajit.a $DESTDIR/libluajit.a
-fi;
+     if [ $ARCH = "armv7a" ] || [ $ARCH = "i686" ]; then
+          make HOST_CC="gcc -m32" CROSS=$NDKCC \
+               STATIC_CC=$NDKCC DYNAMIC_CC="$NDKCC -fPIC" \
+               TARGET_LD=$NDKCC TARGET_AR="$NDKBIN/llvm-ar rcus" \
+               TARGET_STRIP=$NDKBIN/llvm-strip
+     else
+          make CROSS=$NDKCC \
+               STATIC_CC=$NDKCC DYNAMIC_CC="$NDKCC -fPIC" \
+               TARGET_LD=$NDKCC TARGET_AR="$NDKBIN/llvm-ar rcus" \
+               TARGET_STRIP=$NDKBIN/llvm-strip
+     fi
 
-# Android/ARM, armeabi-v7a (ARMv7 VFP), Android 4.0+ (ICS)
-#NDKARCH="$NDKFLAGS -march=armv7-a -mfpu=vfpv3-d16 -Wl,--fix-cortex-a8 -mhard-float -D_NDK_MATH_NO_SOFTFP=1 -Wl,--no-warn-mismatch"
-NDKARCH="$NDKFLAGS -march=armv7-a -msoft-float -mfpu=vfpv3-d16 -Wl,--fix-cortex-a8"
-NDKABI=14
-NDKF="--sysroot $NDK/platforms/android-$NDKABI/arch-arm"
-DESTDIR=$LIBDIR/armeabi-v7a
-mkdir -p $DESTDIR
-rm "$DESTDIR"/luajit.so
-make clean
-make amalg HOST_CC="gcc -m32" CROSS=$NDKP TARGET_SYS=Linux TARGET_FLAGS="$NDKF $NDKARCH"
+     if [ -f src/libluajit.so ]; then
+          mv src/libluajit.a $DESTDIR/libluajit.a
+          echo "Build finished, saving libluajit.a on $DESTDIR"
+     fi;
+}
 
-if [ -f $SRCDIR/src/libluajit.so ]; then
-    mv $SRCDIR/src/libluajit.a $DESTDIR/libluajit.a
-fi;
-
-# Android/x86, x86 (i686 SSE3), Android 4.0+ (ICS)
-NDKARCH="$NDKFLAGS -march=i686 -finline-limit=300"
-NDKABI=9
-DESTDIR=$LIBDIR/x86
-NDKVER=$NDK/toolchains/x86-4.6
-NDKP=$NDKVER/prebuilt/${host_os}-x86_64/bin/i686-linux-android-
-NDKF="--sysroot $NDK/platforms/android-$NDKABI/arch-x86"
-mkdir -p $DESTDIR
-rm "$DESTDIR"/luajit.so
-make clean
-make amalg HOST_CC="gcc -m32" CROSS=$NDKP TARGET_SYS=Linux TARGET_FLAGS="$NDKF $NDKARCH"
-
-if [ -f $SRCDIR/src/libluajit.so ]; then
-    mv $SRCDIR/src/libluajit.a $DESTDIR/libluajit.a
-fi;
-
-make clean
+for ARCH in "armv7a-linux-androideabi21-clang" "i686-linux-android21-clang" "aarch64-linux-android21-clang" "x86_64-linux-android21-clang"
+do
+     build $ARCH
+done

@@ -2,7 +2,7 @@
 -- DynASM. A dynamic assembler for code generation engines.
 -- Originally designed and implemented for LuaJIT.
 --
--- Copyright (C) 2005-2013 Mike Pall. All rights reserved.
+-- Copyright (C) 2005-2022 Mike Pall. All rights reserved.
 -- See below for full copyright notice.
 ------------------------------------------------------------------------------
 
@@ -10,14 +10,14 @@
 local _info = {
   name =	"DynASM",
   description =	"A dynamic assembler for code generation engines",
-  version =	"1.3.0",
-  vernum =	 10300,
-  release =	"2011-05-05",
+  version =	"1.5.0",
+  vernum =	 10500,
+  release =	"2021-05-02",
   author =	"Mike Pall",
-  url =		"http://luajit.org/dynasm.html",
+  url =		"https://luajit.org/dynasm.html",
   license =	"MIT",
   copyright =	[[
-Copyright (C) 2005-2013 Mike Pall. All rights reserved.
+Copyright (C) 2005-2022 Mike Pall. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -38,7 +38,7 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-[ MIT license: http://www.opensource.org/licenses/mit-license.php ]
+[ MIT license: https://www.opensource.org/licenses/mit-license.php ]
 ]],
 }
 
@@ -85,7 +85,7 @@ end
 -- Resync CPP line numbers.
 local function wsync()
   if g_synclineno ~= g_lineno and g_opt.cpp then
-    wline("# "..g_lineno..' "'..g_fname..'"')
+    wline("#line "..g_lineno..' "'..g_fname..'"')
     g_synclineno = g_lineno
   end
 end
@@ -630,6 +630,7 @@ end
 -- Load architecture-specific module.
 local function loadarch(arch)
   if not match(arch, "^[%w_]+$") then return "bad arch name" end
+  _G._map_def = map_def
   local ok, m_arch = pcall(require, "dasm_"..arch)
   if not ok then return "cannot load module: "..m_arch end
   g_arch = m_arch
@@ -695,6 +696,9 @@ map_op[".arch_1"] = function(params)
   if not params then return "name" end
   local err = loadarch(params[1])
   if err then wfatal(err) end
+  wline(format("#if DASM_VERSION != %d", _info.vernum))
+  wline('#error "Version mismatch between DynASM and included encoding engine"')
+  wline("#endif")
 end
 
 -- Dummy .arch pseudo-opcode to improve the error report.
@@ -877,13 +881,9 @@ local function dasmhead(out)
 ** DO NOT EDIT! The original file is in "%s".
 */
 
-#if DASM_VERSION != %d
-#error "Version mismatch between DynASM and included encoding engine"
-#endif
-
 ]], _info.url,
     _info.version, g_arch._info.arch, g_arch._info.version,
-    g_fname, _info.vernum))
+    g_fname))
 end
 
 -- Read input file.
