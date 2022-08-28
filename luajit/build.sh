@@ -1,8 +1,9 @@
+#!/bin/bash
 # Created to run on Linux and using NDK R25B
 
 NDKDIR=$ANDROID_NDK_ROOT
 NDKBIN=$NDKDIR/toolchains/llvm/prebuilt/linux-x86_64/bin
-LIBDIR=libs
+LIBDIR=../bin/luajit
 
 function build() {     
      TOOLCHAIN=$1

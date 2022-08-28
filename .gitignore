@@ -1,2 +1,6 @@
-libs*
+bin*
 build*
+*.o
+*.a
+*.so
+*.tmp
