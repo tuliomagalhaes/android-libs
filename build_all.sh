@@ -19,7 +19,7 @@ function execute_cmake_for_android() {
 
     LIB_DEST=../../bin/$LIB_NAME/$ABI
     mkdir -p $LIB_DEST
-    mv *.a *.so $LIB_DEST
+    mv *.a $LIB_DEST
     
     cd ../
 }

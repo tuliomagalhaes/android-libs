@@ -261,15 +261,12 @@ void AddDefaultProtoPaths(
         std::pair<std::string, std::string>("", path + "/include"));
     return;
   }
-  // change "'$/bin' is next to 'include'" assumption to "'$/bin/tools' is next to 'include'"
-  for (int i = 0; i < 2; i++)
-  {
+  // Check if the upper level directory has an "include" subdirectory.
   pos = path.find_last_of("/\\");
   if (pos == std::string::npos || pos == 0) {
     return;
   }
   path = path.substr(0, pos);
-  }
   if (IsInstalledProtoPath(path + "/include")) {
     paths->push_back(
         std::pair<std::string, std::string>("", path + "/include"));
