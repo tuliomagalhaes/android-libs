@@ -1,8 +1,8 @@
 #!/bin/bash
 # Created to run on Linux and using NDK R25B
 
-NDKDIR=$ANDROID_NDK_ROOT
-NDKBIN=$NDKDIR/toolchains/llvm/prebuilt/linux-x86_64/bin
+NDKDIR="C:\Users\tulio\AppData\Local\Android\Sdk\ndk\25.1.8937393\\"
+NDKBIN=$NDKDIR\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin
 LIBDIR=../bin/luajit
 
 function build() {     
@@ -14,8 +14,8 @@ function build() {
 
      echo "Building libluajit for arch $ARCH"
      
-     NDKCC=$NDKBIN/$TOOLCHAIN
-     DESTDIR=$LIBDIR/$ARCH
+     NDKCC=$NDKBIN\\$TOOLCHAIN
+     DESTDIR=$LIBDIR\\$ARCH
 
      mkdir -p $DESTDIR
 
@@ -24,13 +24,13 @@ function build() {
      if [ $ARCH = "armv7a" ] || [ $ARCH = "i686" ]; then
           make HOST_CC="gcc -m32" CROSS=$NDKCC \
                STATIC_CC=$NDKCC DYNAMIC_CC="$NDKCC -fPIC" \
-               TARGET_LD=$NDKCC TARGET_AR="$NDKBIN/llvm-ar rcus" \
-               TARGET_STRIP=$NDKBIN/llvm-strip
+               TARGET_LD=$NDKCC TARGET_AR="$NDKBIN\\llvm-ar rcus" \
+               TARGET_STRIP=$NDKBIN\\llvm-strip
      else
           make CROSS=$NDKCC \
                STATIC_CC=$NDKCC DYNAMIC_CC="$NDKCC -fPIC" \
-               TARGET_LD=$NDKCC TARGET_AR="$NDKBIN/llvm-ar rcus" \
-               TARGET_STRIP=$NDKBIN/llvm-strip
+               TARGET_LD=$NDKCC TARGET_AR="$NDKBIN\\llvm-ar rcus" \
+               TARGET_STRIP=$NDKBIN\\llvm-strip
      fi
 
      if [ -f src/libluajit.so ]; then
